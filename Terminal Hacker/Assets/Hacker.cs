@@ -1,10 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Hacker : MonoBehaviour
 {
+    private const string MenuHint="Type menu to go back";
+    private string[] level1Passwords = { "bed", "chair", "sofa", "table", "lamp" };
+    private string[] level2Passwords = { "artwork", "artist", "gallery", "museum", "canvas" };
+    private string[] level3Passwords = { "biology", "scientific", "nucleotide", "genetics", "molecular" };
+
     private int level;
+    private string password;
     private enum Screen { MainMenu,Password,Win}
 
     private Screen currentScreen;
@@ -38,19 +42,75 @@ public class Hacker : MonoBehaviour
         {
             RunMainMenu(input);
         }
+        else if (currentScreen == Screen.Password)
+        {
+            CheckPassword(input);
+        }
+    }
+
+    private void DisplayWinScreen()
+    {
+        Terminal.ClearScreen();
+        ShowLevelReward();
+        Terminal.WriteLine(MenuHint);
+    }
+
+    private void ShowLevelReward()
+    {
+        switch (level)
+        {
+            case 1:
+                Terminal.WriteLine(@"
+      .-=""""""""""""""""""""""=-.
+     | . . . . . . . |
+     | .'.'.'.'.'.'. |
+    ()_______________()
+    ||_______________||
+     W               W
+");
+                Terminal.WriteLine("You got a free sofa");
+                break;
+            case 2:
+                
+                Terminal.WriteLine(@"
+     .-""````""-.     
+    /  _.._    `\     
+   / /`    `-.   ; . .
+   | |__  __  \   |   
+.-.| | e`/e`  |   |   
+   | |  |     |   |'--
+   | |  '-    |   |   
+   |  \ --'  /|   |   
+   |   `;---'\|   |   
+");
+                Terminal.WriteLine("You got a free ascii Mona Lisa face");
+                break;
+            case 3:
+                Terminal.WriteLine(@"
+O---o
+ O-o
+  O
+ o-O
+o---O
+ O-o
+  O
+ o-O
+o---O");
+                Terminal.WriteLine("You got some free DNA");
+                break;
+            default:
+                Debug.LogError("Unknown level");
+                break;
+        }
     }
 
     private void RunMainMenu(string input)
     {
-        if (input == "1")
+        bool isValidLevelNumber = (input =="1"||input=="2"||input=="3");
+        if (isValidLevelNumber)
         {
-            level = 1;
-            StartGame();
-        }
-        else if (input == "2")
-        {
-            level = 2;
-            StartGame();
+            level = int.Parse(input);
+            AskForPassword();
         }
         else if (input == "dunkey")
         {
@@ -59,13 +119,54 @@ public class Hacker : MonoBehaviour
         else
         {
             Terminal.WriteLine("Incorrect input");
+            Terminal.WriteLine(MenuHint);
         }
     }
 
-    private void StartGame()
+    private void AskForPassword()
     {
         currentScreen = Screen.Password;
-        Terminal.WriteLine("You have chosen level "+level);
-        Terminal.WriteLine("Please enter your password: ");
+        Terminal.ClearScreen();
+        SetRandomPassword();
+        Terminal.WriteLine(MenuHint);
+        Terminal.WriteLine("Enter your password, hint: "+password.Anagram());
     }
+
+    private void SetRandomPassword()
+    {
+        int index;
+        switch (level)
+        {
+            case 1:
+                index = Random.Range(0, level1Passwords.Length);
+                password = level1Passwords[index];
+                break;
+            case 2:
+                index = Random.Range(0, level2Passwords.Length);
+                password = level2Passwords[index];
+                break;
+            case 3:
+                index = Random.Range(0, level3Passwords.Length);
+                password = level3Passwords[index];
+                break;
+            default:
+                Debug.LogError("Unknown level");
+                break;
+        }
+    }
+
+
+    private void CheckPassword(string input)
+    {
+        if (input == password)
+        {
+            currentScreen = Screen.Win;
+            DisplayWinScreen();
+        }
+        else
+        {
+            AskForPassword();
+        }
+    }
+
 }
